@@ -44,9 +44,13 @@ def single_proc_run(local_rank, main_port, cfg, world_size):
 def single_node_runner(cfg, main_port: int):
     assert cfg.launcher.num_nodes == 1
     num_proc = cfg.launcher.gpus_per_node
-    torch.multiprocessing.set_start_method(
-        "spawn"
-    )  # CUDA runtime does not support `fork`
+    # torch.multiprocessing.set_start_method(
+    #     "spawn"
+    # )  # CUDA runtime does not support `fork`
+    try:
+        torch.multiprocessing.set_start_method("spawn")
+    except RuntimeError:
+        pass  # Start method already set
     if num_proc == 1:
         # directly call single_proc so we can easily set breakpoints
         # mp.spawn does not let us set breakpoints
