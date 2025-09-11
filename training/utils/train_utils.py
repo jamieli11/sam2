@@ -205,8 +205,11 @@ class MemMeter:
         self.count += n
         self.avg = self.sum / self.count
         self.peak = max(self.peak, self.val)
-        if reset_peak_usage:
-            torch.cuda.reset_peak_memory_stats()
+        if torch.cuda.is_available():
+            if reset_peak_usage:
+                torch.cuda.reset_peak_memory_stats()
+        else:
+            pass
 
     def __str__(self):
         fmtstr = (
