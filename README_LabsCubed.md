@@ -11,8 +11,9 @@ This repository contains customized SAM2 implementation for data cleaning tasks 
 
 ## Quick Start
 ### SAM2 data cleaner
-**Input Format**
+**Input**
 
+Use [data generation code](https://github.com/LabsCubed-Inc/labsvision/tree/dev/ddarolfi/ml_marker_detect_data_generation) to generate datasets from [pull videos](s3://labscubed-dev/labscubedone/cubeone-2.0/labsvision_corpus/SN0035_data/). 
 ML marker detection datasets should be organized in the following directory structure:
 ```
 ./data_root
