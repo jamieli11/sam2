@@ -1,3 +1,4 @@
+import argparse
 import cv2
 import glob
 import os
@@ -341,26 +342,64 @@ class SAM2DataCleaner:
         print(f"Rejected frames list: {rejected_log_path}")
 
 
-# Usage example
-if __name__ == "__main__":
-    # Model configuration
-    sam2_checkpoint = "checkpoints/sam2.1_hiera_large.pt"
-    model_cfg = "configs/sam2.1/sam2.1_hiera_l.yaml"
+def main():
+    parser = argparse.ArgumentParser(description='SAM2 Data Cleaner for dataset processing')
 
-    # Data paths
-    input_root = '/home/jamie/labsvision_corpus/s3/data_generated/2025-04-09T19-34-56.365198Z/slot-5' # path contains Images, Masks, Annotations directories
-    output_root = '/home/jamie/labsvision_corpus/s3/sam2_output'
-    os.makedirs(output_root, exist_ok=True)
+    # Model configuration arguments
+    parser.add_argument('--sam2_checkpoint',
+                        default='checkpoints/sam2.1_hiera_large.pt',
+                        help='Path to SAM2 checkpoint file')
+    parser.add_argument('--model_cfg',
+                        default='configs/sam2.1/sam2.1_hiera_l.yaml',
+                        help='Path to model configuration file')
+
+    # Data path arguments
+    parser.add_argument('--input_root',
+                        required=True,
+                        help='Input root directory (contains Images, Masks, Annotations directories)')
+    parser.add_argument('--output_root',
+                        required=True,
+                        help='Output root directory for cleaned dataset')
+
+    # Processing parameters
+    parser.add_argument('--area_threshold',
+                        type=float,
+                        default=0.6,
+                        help='Area threshold for rejection (reject if area < threshold x or > 1/threshold x original)')
+    parser.add_argument('--backup_rejected',
+                        action='store_true',
+                        default=True,
+                        help='Backup rejected frames')
+    parser.add_argument('--no_backup_rejected',
+                        action='store_false',
+                        dest='backup_rejected',
+                        help='Do not backup rejected frames')
+
+    args = parser.parse_args()
+
+    # Create output directory
+    os.makedirs(args.output_root, exist_ok=True)
 
     # Initialize cleaner
     print("Initializing SAM2 Data Cleaner...")
-    cleaner = SAM2DataCleaner(sam2_checkpoint, model_cfg)
+    cleaner = SAM2DataCleaner(args.sam2_checkpoint, args.model_cfg)
 
     # Start cleaning
     print("Starting dataset cleaning...")
+    print(f"Input: {args.input_root}")
+    print(f"Output: {args.output_root}")
+    print(f"Area threshold: {args.area_threshold}")
+    print(f"Backup rejected: {args.backup_rejected}")
+
     cleaner.clean_dataset(
-        input_root=input_root,
-        output_root=output_root,
-        area_threshold=0.6,  # Reject if area < area_threshold x or > 1/area_threshold x original
-        backup_rejected=True  # Backup rejected frames
+        input_root=args.input_root,
+        output_root=args.output_root,
+        area_threshold=args.area_threshold,
+        backup_rejected=args.backup_rejected
     )
+
+    print("Dataset cleaning completed!")
+
+
+if __name__ == "__main__":
+    main()
